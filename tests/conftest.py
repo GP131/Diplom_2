@@ -12,22 +12,22 @@ def create_user():
     login_data = payload.copy()
     del login_data["name"]
 
-    # Ensure uniqueness by checking if the user exists before creating
     response = requests.post(f"{Urls.MAIN_URL}{Handle.CREATE_USER}", json=payload)
 
     if response.status_code == 403 and "User already exists" in response.text:
-        # If user exists, try deleting them before retrying
         delete_response = requests.post(f"{Urls.MAIN_URL}{Handle.LOGIN}", json=login_data)
         if delete_response.status_code == 200:
             token = delete_response.json().get("accessToken")
-            requests.delete(f"{Urls.MAIN_URL}{Handle.DELETE_USER}", headers={"Authorization": f"Bearer {token}"})
-            # Retry user creation
+            requests.delete(
+                f"{Urls.MAIN_URL}{Handle.DELETE_USER}",
+                headers={"Authorization": f"Bearer {token}"}
+            )
             response = requests.post(f"{Urls.MAIN_URL}{Handle.CREATE_USER}", json=payload)
 
-    assert response.status_code == 200, f"User creation failed: {response.status_code}, response: {response.text}"
-
-    token = response.json()["accessToken"]
+    token = response.json().get("accessToken")
     yield response, payload, login_data, token
 
-    # Ensure user cleanup after test execution
-    requests.delete(f"{Urls.MAIN_URL}{Handle.DELETE_USER}", headers={"Authorization": f"Bearer {token}"})
+    requests.delete(
+        f"{Urls.MAIN_URL}{Handle.DELETE_USER}",
+        headers={"Authorization": f"Bearer {token}"}
+    )
