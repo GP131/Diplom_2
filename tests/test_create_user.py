@@ -7,22 +7,19 @@ from data.users_data import User
 
 
 @allure.suite("Создание пользователя")
-class TestCreateTheUser:
+class TestCreateUser:
 
     @allure.description("Создание нового пользователя")
     @allure.title("Создание нового пользователя")
-    def test_create_new_user_positive(self):
-        user_data = User.create_user_data()
-        headers = {**Handle.headers}
+    def test_create_new_user_positive(self, create_user):
+        response, user_payload, login_data, token = create_user
 
-        response = requests.post(f'{Urls.MAIN_URL}{Handle.CREATE_USER}', headers=headers, json=user_data)
-
-        assert response.status_code == 200, f"Expected 200, got {response.status_code}, response: {response.text}"
-        assert response.json().get("success") is True, f"User creation failed, response: {response.text}"
-
-        token = response.json().get("accessToken")
-        if token:
-            requests.delete(f"{Urls.MAIN_URL}{Handle.DELETE_USER}", headers={"Authorization": token})
+        assert response.status_code == 200, (
+            f"Expected 200, got {response.status_code}, response: {response.text}"
+        )
+        assert response.json().get("success") is True, (
+            f"User creation failed, response: {response.text}"
+        )
 
     @allure.description("Попытка создать уже существующего пользователя")
     @allure.title("Создание существующего пользователя должно выдавать ошибку")
