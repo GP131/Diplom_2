@@ -24,7 +24,9 @@ def create_user():
             )
             response = requests.post(f"{Urls.MAIN_URL}{Handle.CREATE_USER}", json=payload)
 
-    token = response.json().get("accessToken")
+    raw_token = response.json().get("accessToken")
+    token = raw_token if raw_token.startswith("Bearer ") else f"Bearer {raw_token}"
+
     yield response, payload, login_data, token
 
     requests.delete(

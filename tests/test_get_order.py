@@ -13,14 +13,7 @@ class TestGetOrderUser:
     def test_get_order_user_with_auth(self, create_user):
         """Тест на получение списка заказов авторизованным пользователем"""
 
-        raw_token = create_user[3]
-        assert raw_token, "Token is empty. User creation might have failed."
-
-        if raw_token.startswith("Bearer "):
-            token = raw_token
-        else:
-            token = f"Bearer {raw_token}"
-
+        token = create_user[3]  # now guaranteed "Bearer <token>"
         headers = {"Authorization": token, **Handle.headers}
 
         auth_check_response = requests.get(f"{Urls.MAIN_URL}{Handle.CHANGE_USER_DATA}", headers=headers)
@@ -33,13 +26,11 @@ class TestGetOrderUser:
             headers=headers,
             json=Ingredient.correct_ingredients()
         )
-
         assert create_order_response.status_code == 200, (
             f"Expected 200, got {create_order_response.status_code}, response: {create_order_response.text}"
         )
 
         response = requests.get(f"{Urls.MAIN_URL}{Handle.GET_ORDERS}", headers=headers)
-
         assert response.status_code == 200, (
             f"Expected 200, got {response.status_code}, response: {response.text}"
         )
